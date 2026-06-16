@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity AI Music Studio</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Local Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-wand-magic-sparkles magic-icon"></i>
+                <h1>Antigravity <span>AI Music Studio</span></h1>
+            </div>
+            <div class="status-badge" id="system-status">
+                <span class="status-dot green"></span>
+                <span class="status-text">System Ready</span>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <main class="main-layout">
+            
+            <!-- LEFT COLUMN: CONTROLS & PARAMS -->
+            <section class="control-panel">
+                <div class="glass-card">
+                    <h2><i class="fa-solid fa-sliders"></i> Studio Controls</h2>
+                    
+                    <div class="control-section">
+                        <h3>1. Dataset Collection</h3>
+                        <div class="input-group">
+                            <label for="collect-limit">Bach Chorales Limit</label>
+                            <input type="number" id="collect-limit" min="5" max="100" value="20">
+                        </div>
+                        <button class="btn btn-primary" onclick="triggerStep('collect')">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> Collect MIDI Data
+                        </button>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>2. Data Preprocessing</h3>
+                        <div class="input-group">
+                            <label for="seq-length">Sequence Length (Notes)</label>
+                            <input type="number" id="seq-length" min="8" max="128" value="32">
+                        </div>
+                        <button class="btn btn-primary" onclick="triggerStep('preprocess')">
+                            <i class="fa-solid fa-scissors"></i> Preprocess Notes
+                        </button>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>3. Neural Network Training</h3>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="epochs">Epochs</label>
+                                <input type="number" id="epochs" min="1" max="200" value="30">
+                            </div>
+                            <div class="input-group">
+                                <label for="lr">Learning Rate</label>
+                                <input type="number" id="lr" step="0.0001" min="0.0001" max="0.01" value="0.001">
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="batch-size">Batch Size</label>
+                                <input type="number" id="batch-size" min="8" max="256" value="64">
+                            </div>
+                        </div>
+                        <button class="btn btn-accent" onclick="triggerStep('train')">
+                            <i class="fa-solid fa-brain"></i> Train LSTM Model
+                        </button>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>4. AI Composition</h3>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="gen-length">Notes Limit</label>
+                                <input type="number" id="gen-length" min="50" max="1000" value="200">
+                            </div>
+                            <div class="input-group">
+                                <label for="temperature">Creativity (Temp)</label>
+                                <input type="range" id="temperature" min="0.1" max="2.0" step="0.1" value="1.0">
+                                <span class="range-val" id="temp-val">1.0</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="triggerStep('generate')">
+                            <i class="fa-solid fa-wand-magic"></i> Generate Melody
+                        </button>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>5. Audio Synthesis</h3>
+                        <div class="input-group">
+                            <label for="bpm">Tempo (BPM)</label>
+                            <input type="number" id="bpm" min="40" max="240" value="120">
+                        </div>
+                        <button class="btn btn-primary" onclick="triggerStep('synthesize')">
+                            <i class="fa-solid fa-music"></i> Synthesize to WAV
+                        </button>
+                    </div>
+
+                    <div class="pipeline-separator">OR</div>
+
+                    <button class="btn btn-glow-gradient" onclick="triggerStep('all')">
+                        <i class="fa-solid fa-circle-play"></i> Run Entire Pipeline
+                    </button>
+                </div>
+            </section>
+
+            <!-- CENTER COLUMN: VISUALIZATIONS -->
+            <section class="visualization-panel">
+                
+                <!-- PIANO ROLL CARD -->
+                <div class="glass-card piano-roll-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-wave-square"></i> Piano Roll Visualizer</h2>
+                        <div class="playback-controls-mini">
+                            <button class="icon-btn" id="play-btn" disabled><i class="fa-solid fa-play"></i></button>
+                            <button class="icon-btn" id="stop-btn" disabled><i class="fa-solid fa-stop"></i></button>
+                            <span id="time-display">00:00 / 00:00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="canvas-container">
+                        <canvas id="piano-roll-canvas"></canvas>
+                        <div class="empty-state" id="canvas-empty">
+                            <i class="fa-solid fa-music"></i>
+                            <p>Generate a melody to visualize notes in real-time</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TRAINING GRAPH CARD -->
+                <div class="glass-card training-graph-card">
+                    <h2><i class="fa-solid fa-chart-line"></i> Live Training Progress</h2>
+                    <div class="chart-container">
+                        <canvas id="training-chart"></canvas>
+                        <div class="empty-state" id="chart-empty">
+                            <i class="fa-solid fa-chart-area"></i>
+                            <p>Training statistics will plot live here</p>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- RIGHT COLUMN: AUDIO HUB & LOGS -->
+            <section class="media-hub">
+                
+                <!-- AUDIO PLAYER CARD -->
+                <div class="glass-card audio-hub-card">
+                    <h2><i class="fa-solid fa-circle-nodes"></i> Composition Hub</h2>
+                    
+                    <div class="audio-player-container">
+                        <div class="disc-animation" id="audio-disc">
+                            <i class="fa-solid fa-compact-disc"></i>
+                        </div>
+                        <div class="audio-info">
+                            <h4 id="track-title">No Track Loaded</h4>
+                            <p id="track-meta">Generate music or run the pipeline to synthesize</p>
+                        </div>
+                        <audio id="audio-player"></audio>
+                    </div>
+
+                    <div class="download-buttons">
+                        <a href="#" id="download-mid" class="download-link disabled" download>
+                            <i class="fa-solid fa-file-midi"></i> Download MIDI
+                        </a>
+                        <a href="#" id="download-wav" class="download-link disabled" download>
+                            <i class="fa-solid fa-file-audio"></i> Download WAV
+                        </a>
+                    </div>
+                </div>
+
+                <!-- LIVE CONSOLE LOGS -->
+                <div class="glass-card console-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-terminal"></i> Terminal Logs</h2>
+                        <button class="icon-btn-text" onclick="clearLogs()"><i class="fa-solid fa-trash-can"></i> Clear</button>
+                    </div>
+                    <div class="terminal-body" id="logs-box">
+                        <div class="log-entry system-log">Welcome to Antigravity AI Music Studio console. Ready to generate...</div>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Web App Javascript -->
+    <script src="js/app.js"></script>
+</body>
+</html>
